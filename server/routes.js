@@ -12,23 +12,48 @@ function request_otp_api(req, res, opts_) {
     let opts = {
         method: opts_.method,
         url: properties.esup.api_url + opts_.relUrl,
+        body: req.body,
+        json: true
     }
     if (opts_.bearerAuth) {
         opts.auth = { 'bearer': properties.esup.api_password }
     }
-    //console.log(opts.method +':'+ opts.url);
-    //console.log(req.session.passport);
+
     request(opts, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            var infos = JSON.parse(body);
+            var infos = body; 
             if(req.session.passport.user.uid)infos.uid = req.session.passport.user.uid;
             infos.api_url = properties.esup.api_url;
-            //console.log(infos)
             res.send(infos);
-        } else res.send({
-            "code": "Error",
-            "message": error
-        });
+        } else {
+            if(!response) {
+                // Api did not respond (crash ?)
+                res.status(500);
+                res.send({
+                    message: "Api did not give a response"
+                });
+                return;
+            }
+
+            // forward the status code, because if the request failed
+            // it should not be responding with 200 ("everything is fine !")
+            //
+            // this helps to have clearer error messages, because getting
+            // "error, code 200" with a message containing just "Error" is
+            // kind of frustrating.
+            res.status(response?.statusCode ?? 500);
+
+            const contentType = response.headers['content-type'];
+            let forwardedError = response.body; 
+            if(contentType === "application/json") {
+                forwardedError = response.body;
+            }
+
+            res.send({
+                message : `Error forwarded from API response`,
+                forwarded: forwardedError,
+            });
+        }
     });
 }
 
