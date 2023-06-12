@@ -1426,33 +1426,37 @@ var app = new Vue({
             this.messages = data;
             this.cleanMethods();
         },
-	checkAcl: function(method,acl){
-	 var result=false;
-	 var not="";	
-	 if(acl=="deny"){
-		result=true;
-		not="not ";		
-	  }
-	  if(this.users_methods[method][acl] && this.users_methods.user.attributes)
-	    for(attr in this.users_methods[method][acl]) {
-              //console.debug("this.users_methods["+method+"]["+acl+"]: "+JSON.stringify(this.users_methods[method][acl]));
-	      //console.debug("User: "+JSON.stringify(this.users_methods.user));   
-	      if(this.users_methods.user.attributes[attr])
-		for(valueAttr of this.users_methods[method][acl][attr])
-  		    if(this.users_methods.user.attributes[attr].includes(valueAttr)){
-                	//console.debug("{"+method+"} method is "+not+"displayed because user attribute {"+attr+"} contains {"+valueAttr+"}"); 		
-			return !result;
-		    }	        	      
-             }         	    
-	  return result;  
-	},
-	is_authorized: function(method){
-	 var result=true; //par défaut, la méthode est autorisée
-	 if(this.users_methods && this.users_methods[method])
-	    for(acl in this.users_methods[method])//pour une méthode, la priorité porte sur le dernier acl [allow|deny].
-		result=this.checkAcl(method,acl); 
-	    
-	 return result;
-	} 
-  }
+        checkAcl: function(method,acl){
+            var result=false;
+            var not="";
+            if(acl=="deny"){
+                result=true;
+                not="not ";
+            }
+            if(this.users_methods[method][acl] && this.users_methods.user.attributes) {
+                for(attr in this.users_methods[method][acl]) {
+                    //console.debug("this.users_methods["+method+"]["+acl+"]: "+JSON.stringify(this.users_methods[method][acl]));
+                    //console.debug("User: "+JSON.stringify(this.users_methods.user));
+                    if(this.users_methods.user.attributes[attr]) {
+                        for(valueAttr of this.users_methods[method][acl][attr]) {
+                            if(this.users_methods.user.attributes[attr].includes(valueAttr)){
+                                //console.debug("{"+method+"} method is "+not+"displayed because user attribute {"+attr+"} contains {"+valueAttr+"}");
+                                return !result;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        },
+        is_authorized: function(method){
+            var result=true; //par défaut, la méthode est autorisée
+            if(this.users_methods && this.users_methods[method]) {
+                for(acl in this.users_methods[method]) {//pour une méthode, la priorité porte sur le dernier acl [allow|deny].
+                    result=this.checkAcl(method,acl);
+                }
+            }
+            return result;
+        }
+    }
 })
