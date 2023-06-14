@@ -28,7 +28,7 @@ function request_otp_api(req, res, opts_) {
         } else {
             if(!response) {
                 // Api did not respond (crash ?)
-                res.status(500);
+                res.status(503);
                 res.send({
                     message: "Api did not give a response"
                 });
