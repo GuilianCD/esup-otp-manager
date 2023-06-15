@@ -1,29 +1,29 @@
 script#user-dashboard(type='text/x-template').
-    <div>
-    <div class="section" v-for="method in methods" v-if="method.activate && currentmethod==method.name">
-    <h4>{{method.label || method.name}}</h4>
-    <div>
-    <label>
-    {{messages.api.action.deactivate}}
-    <div class="Switch UserSwitch Round On" v-if="user.methods[method.name].active" v-on:click="deactivate(method.name)" v-bind:name="method.name" >
-      <div class="Toggle"></div>
-    </div>
-    <div v-else class="Switch UserSwitch Round Off" v-on:click="activate(method.name)" v-bind:name="method.name" >
-       <div class="Toggle"></div>
-    </div>
-       {{messages.api.action.activate}}
-    </label>
-    </div>
-    <br>
-    <div class="divider"></div>
-    <p>
-    {{messages.api.methods[method.name].description}}
-    </p>
-    <div v-if="user.methods[method.name].active || typeof(user.methods[method.name].activationCode)=='string'">
-    <div class="divider"></div>
-    <component :is=currentmethod v-bind:methods=methods v-bind:generate_totp=generateTotpConfirm v-bind:generate_bypass=generateBypassConfirm v-bind:get_user=get_user v-bind:messages=messages v-bind:user=user></component>
-
-    </div>
-    </div>
-    </div>
+   <div>
+      <div class="section method-section" v-for="method in methods" v-if="method.activate && currentmethod==method.name">
+         <div class="method-header">
+            <h4>{{method.label || method.name}}</h4>
+            <p>
+               {{messages.api.methods[method.name].description}}
+            </p>
+         </div>
+         <div>
+            <label>
+               {{messages.api.action.deactivate}}
+               <div class="Switch UserSwitch Round On" v-if="user.methods[method.name].active" v-on:click="deactivate(method.name)" v-bind:name="method.name" >
+                  <div class="Toggle"></div>
+               </div>
+               <div v-else class="Switch UserSwitch Round Off" v-on:click="activate(method.name)" v-bind:name="method.name" >
+                  <div class="Toggle"></div>
+               </div>
+               {{messages.api.action.activate}}
+            </label>
+         </div>
+ 
+         <div class="divider"/>
+         <div class="method-component-wrapper" v-if="user.methods[method.name].active || typeof(user.methods[method.name].activationCode)=='string'">
+            <component :is=currentmethod v-bind:methods=methods v-bind:generate_totp=generateTotpConfirm v-bind:generate_bypass=generateBypassConfirm v-bind:get_user=get_user v-bind:messages=messages v-bind:user=user></component>
+         </div>
+      </div>
+   </div>
 
