@@ -1,19 +1,19 @@
 script#user-view(type='text/x-template').
-    <div>
-    <ul>
-    <h4 v-if="user.uid && typeof(user.uid)!== 'function'">{{user.uid}}</h4>
-    <li v-for="method in methods" v-if="user.methods[method.name] && methods[method.name].activate">
-    <h5>{{method.label}}</h5>
-    <div v-if="user.methods[method.name].active" v-on:click="deactivate(method.name)" v-bind:name=method.name :id="method.name+'_switch'" class="Switch UserSwitch Round On">
-    <div class="Toggle"></div>
-    </div>
-    <div v-else v-on:click="activate(method.name)" v-bind:name=method.name :id="method.name+'_switch'" class="Switch UserSwitch Round Off">
-    <div class="Toggle"></div>
-    </div>
-    <div v-if="user.methods[method.name].active || user.methods[method.name].activationCode">
-    <component :is=method.name v-bind:methods=methods v-bind:generate_totp=generateTotpConfirm v-bind:generate_bypass=generateBypassConfirm v-bind:get_user=get_user v-bind:messages=messages v-bind:user=user v-bind:user.sync=user v-bind:switch_push_event=switchPushEvent></component>
-    </div>
-    <div class="divider"></div>
-    </li>
-    </ul>
-    </div>
+	<div>
+		<ul>
+			<h4 v-if="user.uid && typeof(user.uid)!== 'function'">{{user.uid}}</h4>
+			<li v-for="method in methods" v-if="user.methods[method.name] && methods[method.name].activate">
+				<h5>{{method.label}}</h5>
+				<div v-if="user.methods[method.name].active" v-on:click="deactivate(method.name)" v-bind:name=method.name :id="method.name+'_switch'" class="Switch UserSwitch Round On">
+					<div class="Toggle"></div>
+				</div>
+				<div v-else v-on:click="activate(method.name)" v-bind:name=method.name :id="method.name+'_switch'" class="Switch UserSwitch Round Off">
+					<div class="Toggle"></div>
+				</div>
+				<div v-if="user.methods[method.name].active || user.methods[method.name].activationCode">
+					<component :is=method.name v-bind:methods=methods v-bind:generate_webauthn=generateWebauthnConfirm v-bind:generate_totp=generateTotpConfirm v-bind:generate_bypass=generateBypassConfirm v-bind:get_user=get_user v-bind:messages=messages v-bind:user=user v-bind:user.sync=user v-bind:switch_push_event=switchPushEvent></component>
+				</div>
+				<div class="divider"></div>
+			</li>
+		</ul>
+	</div>
