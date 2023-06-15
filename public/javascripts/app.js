@@ -38,6 +38,73 @@ var arr = window.location.href.split('/');
 var urlSockets = arr[0] + "//" + arr[2];
 var socket;
 
+/**
+ * Gives the "range" of an http status code.
+ * It makes it easier to check if a status
+ * code is a success (2XX), a request error
+ * (4XX), etc.
+ *  **/
+function httpRange(status) {
+	return (status - (status % 100));
+}
+
+
+/** base64url helper functions **/
+/**
+* Convert from a Base64URL-encoded string to an Array Buffer. Best used when converting a
+* credential ID from a JSON string to an ArrayBuffer, like in allowCredentials or
+* excludeCredentials
+*
+* Helper method to compliment `bufferToBase64URLString`
+*/
+function base64URLStringToBuffer(base64URLString) {
+	// Convert from Base64URL to Base64
+	const base64 = base64URLString.replace(/-/g, '+').replace(/_/g, '/');
+	/**
+	 * Pad with '=' until it's a multiple of four
+	 * (4 - (85 % 4 = 1) = 3) % 4 = 3 padding
+	 * (4 - (86 % 4 = 2) = 2) % 4 = 2 padding
+	 * (4 - (87 % 4 = 3) = 1) % 4 = 1 padding
+	 * (4 - (88 % 4 = 0) = 4) % 4 = 0 padding
+	 */
+	const padLength = (4 - (base64.length % 4)) % 4;
+	const padded = base64.padEnd(base64.length + padLength, '=');
+
+	// Convert to a binary string
+	const binary = atob(padded);
+
+	// Convert binary string to buffer
+	const buffer = new ArrayBuffer(binary.length);
+	const bytes = new Uint8Array(buffer);
+
+	for (let i = 0; i < binary.length; i++) {
+		bytes[i] = binary.charCodeAt(i);
+	}
+
+	return buffer;
+}
+
+/**
+* Convert the given array buffer into a Base64URL-encoded string. Ideal for converting various
+* credential response ArrayBuffers to string for sending back to the server as JSON.
+*
+* Helper method to compliment `base64URLStringToBuffer`
+* 
+* source: https://github.com/MasterKale/SimpleWebAuthn/blob/master/packages/browser/src/helpers/bufferToBase64URLString.ts
+*/
+function bufferToBase64URLString(buffer) {
+	const bytes = new Uint8Array(buffer);
+	let str = '';
+
+	for (const charCode of bytes) {
+		str += String.fromCharCode(charCode);
+	}
+
+	const base64String = btoa(str);
+
+	return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
 /** Vue.JS **/
 
 /** User **/
@@ -97,6 +164,487 @@ var TotpMethod = Vue.extend({
         'messages': Object,
     },
     template: '#totp-method'
+});
+
+const WebAuthnSingleFactor = Vue.extend({
+	props: {
+		messages: Object,
+
+		// authenticator props
+		name: String,
+		credentialID: String,
+
+		// index of this factor in the
+		// array of all factors.
+		id: Number,
+	},
+
+	data: function() {
+		return {
+			hovering_edit: false,
+
+			// contains the name as it is being typed ; 
+			// reflects the value of the input field
+			nameBeingTyped: "",
+
+			// @TODO(Guilian): get this value from esup.json
+			maxCharsAllowed: 20,
+
+			// When cancelling, set this as the "new name" (go back to before edit)
+			nameMemory: null,
+		};
+	},
+	computed: {
+		editing: function() {
+			const is = this.name === null;
+			if(is) {
+				// Vue.nextTick does not seem to work
+				// => wait for next turn of event loop
+				setTimeout(() => {
+					document.querySelector("#new-name-input")?.focus();
+				}, 0);				
+			}
+			return is;
+		},
+		characterCountIndicator() {
+			return `${this.nameBeingTyped.length}/${this.maxCharsAllowed}`;
+		},
+	},
+	methods: {
+
+        startEditing: function() {
+            // prevents icon from being stuck in edit-hover mode (because the 
+            // mouseleave event of the icon is never fired)
+            this.hovering_edit = false;
+
+			this.nameMemory = this.name.slice(0);
+			this.$emit('newfactorname', null,  this.nameMemory, this.credentialID);
+			// Vue.nextTick does not seem to work
+			// => wait for next turn of event loop
+			setTimeout(() => {
+				this.nameBeingTyped = this.nameMemory;
+				document.querySelector("#new-name-input").value = this.nameMemory;
+			}, 0);	
+		},
+
+		/**
+		 * This function is called after onBeforeNameBeingTyped, if 
+		 * the event in that function was not cancelled.
+		 * It just updates the internal representation of the typed text. 
+		 * @param {InputEvent} e the input event 
+		 */
+		onNameTyped: function(e) {
+			this.nameBeingTyped = e.target.value;
+		},
+
+		/**
+		 * When trying to enter some text in the field,
+		 * this function checks if entering such text 
+		 * is valid (too long, wrong characters, etc.)
+		 * @param {InputEvent} event the before input event
+		 */
+		onBeforeNameBeingTyped: function(event) {
+			const ignore = [
+				"deleteContentBackward",
+				"deleteWordBackward"
+			];
+
+			if(ignore.includes(event.inputType)) {
+				return true;
+			}
+
+			const proposition = (this.nameBeingTyped + event.data);
+
+			if(proposition.length > this.maxCharsAllowed) {
+				event.preventDefault();
+				return false;
+			}
+
+			if(/^[a-zA-Z0-9_^¨éêèà ]{1,20}$/g.test(proposition) === false) {
+				event.preventDefault();
+				return false;
+			}
+
+			return true;
+		},
+
+		cancelChoosingName: function(){
+			this.$emit('newfactorname', this.nameMemory,  this.nameMemory, this.credentialID);
+		},
+
+		resolveChoosingName: function() {
+			if(!this.editing) {
+				Materialize.toast(this.messages.error.webauthn.generic, 3000, 'red darken-1');
+				return;
+			}
+			
+			const textValue = document.querySelector("#new-name-input").value;
+			
+
+			if(typeof textValue !== 'string') {
+				Materialize.toast(this.messages.error.webauthn.generic, 3000, 'red darken-1');
+				return;
+			}
+
+			if(textValue.length < 1 || textValue.length > this.maxCharsAllowed) {
+				Materialize.toast(this.messages.error.webauthn.input_hint_length, 3000, 'red darken-1');
+				return;
+			}
+
+		
+			if(/^[a-zA-Z0-9_éêèà ]{1,20}$/g.test(textValue) === false) {
+				Materialize.toast(this.messages.error.webauthn.input_hint_type, 3000, 'red darken-1');
+				return;
+			}
+
+			this.nameBeingTyped = "";
+			this.$emit('newfactorname', textValue, this.nameMemory, this.credentialID);
+			return;
+		},
+	},
+	
+	template: '#webauthn-singlefactor',
+});
+
+
+const WebAuthnMethod = Vue.extend({
+	props: {
+		'user': Object,
+		'generate_webauthn': Function,
+		'activate': Function,
+		'deactivate': Function,
+		'messages': Object,
+		'method': Object,
+	},
+	components: {
+		WebAuthnSingleFactor	
+	},
+	data: function() {
+		return {
+			// = waiting for server response
+			waiting_for_fetch: true,
+
+			// = waiting for user interaction with the MFA factor
+			waiting_for_user_input: false,
+
+			// data about user fetched from api call
+			realData: null,
+		};
+	},
+	computed: {
+		showAddButton() {
+			if(this.data.auths.length === 0) {
+				return true;
+			}
+			// if a name is null, we're naming a new factor
+			return this.data.auths.every(auth => auth.name !== null);
+		},
+
+		data() {
+			return this.realData ?? {};
+		},
+
+		gotData() {
+			return this.realData !== null;
+		},
+
+		descriptionMessage() {
+			if(this.data.auths.every(auth => auth.name !== null) === false) {
+				return this.messages.api.action.webauthn.give_name_to_factor.replace('%CANCEL_KEY%', `<kbd>${this.messages.api.key.escape}</kbd>`);
+			}
+			
+			if(this.data.auths.length == 0) {
+				return this.messages.api.methods.webauthn.no_authentificators;
+			}
+			else if(this.data.auths.length == 1) {
+				return this.messages.api.methods.webauthn.single_auth;
+			}
+			else {
+				return this.messages.api.methods.webauthn.nb_of_auths.replace('%NB%', this.data.auths.length);
+			}
+		},
+	},
+	methods: {
+		findAuthenticatorIndex: function(fromID) {
+			return this.realData.auths.findIndex(auth => auth.credentialID === fromID);
+		},
+
+		updateFactorName: async function(name, prevName, id) {
+			// name is null => editing
+			if(name !== null) {
+				await this.renameAuthenticator(id, name, prevName);
+			}
+			else {
+				const matchingAuthIndex = this.findAuthenticatorIndex(id);
+				
+				if(matchingAuthIndex === -1) {
+					return;
+				}
+				this.realData.auths[matchingAuthIndex].name = null;
+			}
+		},
+
+		fetchAuthnData: async function() {
+			let fetchedData;
+			try {
+				this.waiting_for_fetch = true;
+				const res = await fetch("/api/secret/webauthn", {method: "GET"});
+
+				if(res.headers.get('content-type').split(';').includes("application/json") === false) {
+					//console.error("Incorrect api response type : " + res.headers.get('content-type'));
+					throw new Error("Incorrect api response type : " + res.headers.get('content-type'));
+				}
+				
+				fetchedData = await res.json();
+			}
+			catch(e) {
+				// @TODO(Guilian): improve error handling
+				fetchedData = null;
+			}
+			finally {
+				this.waiting_for_fetch = false;
+				
+			}
+			return fetchedData;
+		},
+		deleteAuthenticatorConfirm: async function(authCredID) {
+			if(window.confirm(this.messages.api.action.webauthn.confirm_delete)) {
+				this.deleteAuthenticator(authCredID);
+			}
+		},
+
+		renameAuthenticator: async function(authCredID, newName, previousName, showSuccessToast = true) {
+			// optimistic UI (show change before server accepts)
+			const matchingAuthIndex = this.findAuthenticatorIndex(authCredID);
+
+			// previousName is provided because editing the name of a factor
+			// sets it's name attribute to null.
+			if(previousName === newName) {
+				// don't send data to server 
+				this.realData.auths[matchingAuthIndex].name = newName;
+				return;
+			}
+			
+			// change AFTER comparing
+			this.realData.auths[matchingAuthIndex].name = newName;
+			
+			try {
+				this.waiting_for_fetch = true;
+
+				const res = await fetch("/api/webauthn/auth/" + authCredID, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							name: newName
+						})
+					}, 
+				);
+				
+				if(httpRange(res.status) === 200) {
+					// update data
+					this.realData = await this.fetchAuthnData();
+					// FIXME display correct message ? maybe ?
+					if(showSuccessToast) {
+						Materialize.toast(this.messages.success.webauthn.registered, 3000, 'green darken-1');
+					}
+				}
+				else {
+					Materialize.toast(this.messages.error.webauthn.generic, 3000, 'red darken-1');
+				}
+			}
+			catch(e) {
+				Materialize.toast(this.messages.error.webauthn.generic, 3000, 'red darken-1');
+			}
+			finally {
+				this.waiting_for_fetch = false;
+			}
+		},
+
+		deleteAuthenticator: async function(authCredID) {
+			try {
+				this.waiting_for_fetch = true;
+
+				const res = await fetch("/api/webauthn/auth/" + authCredID, {method: "DELETE"});
+				
+				if(httpRange(res.status) === 200) {
+					// @TODO(Guilian): can filter directly instead of refetching
+					this.realData = await this.fetchAuthnData();
+					Materialize.toast(this.messages.success.webauthn.deleted, 3000, 'green darken-1');
+				}
+				else {
+					Materialize.toast(this.messages.error.webauthn.delete_failed, 3000, 'red darken-1');
+				}
+			}
+			catch(e) {
+				Materialize.toast(this.messages.error.webauthn.delete_failed, 3000, 'red darken-1');
+			}
+			finally {
+				this.waiting_for_fetch = false;
+			}
+		},
+		generateWebauthn: async function(onError) {
+			try {
+				const data = await this.fetchAuthnData();
+
+				// arguments for the webauthn registration
+				const pubkeyTypes = [
+					{
+					  "type": "public-key",
+					  "alg": -7
+					},
+					{
+					  "type": "public-key",
+					  "alg": -8
+					},
+					{
+					  "type": "public-key",
+					  "alg": -36
+					},
+					{
+					  "type": "public-key",
+					  "alg": -37
+					},
+					{
+					  "type": "public-key",
+					  "alg": -38
+					},
+					{
+					  "type": "public-key",
+					  "alg": -39
+					},
+					{
+					  "type": "public-key",
+					  "alg": -257
+					},
+					{
+					  "type": "public-key",
+					  "alg": -258
+					},
+					{
+					  "type": "public-key",
+					  "alg": -259
+					}
+				]
+
+				const publicKeyCredentialCreationOptions = {
+					challenge: base64URLStringToBuffer(data.nonce),
+					rp: data.rp,
+					user: {
+						id: Uint8Array.from(data.user_id), 
+						name: `${this.user.uid}@univ-paris1.fr`,
+						displayName: `${this.user.uid}` 
+					},
+					// Spec recommends at least supporting these
+					pubKeyCredParams: pubkeyTypes,
+					// user has 60 seconds to register
+					timeout: 60000,
+					// leaks data about the user if in direct mode.
+					attestation: "none",
+					// Don't register the same credentials twice
+					excludeCredentials: data.auths.map(a => ({id: base64URLStringToBuffer(a.credentialID), type: "public-key"})),
+				};
+
+				this.waiting_for_user_input = true;
+				// register
+				const credentials = await navigator.credentials.create({publicKey: publicKeyCredentialCreationOptions});
+
+				this.waiting_for_user_input = false;
+
+				// PublicKeyCredential can not be serialized
+				// because it contains some ArrayBuffers, which
+				// can not be serialized.
+				// This just translates the buffer to its' 'safe'
+				// version.
+				// This is only for the REGISTRATION part
+        		// It is slightly different from what is
+        		// used for authentication
+				const SerializePKC = PKC => {
+					return {
+						id: PKC.id,
+						type: PKC.type,
+						rawId: bufferToBase64URLString(PKC.rawId),
+						response: {
+							attestationObject: bufferToBase64URLString(PKC.response.attestationObject),
+							clientDataJSON: bufferToBase64URLString(PKC.response.clientDataJSON),
+						}
+					};
+				}
+
+				
+
+				
+				this.waiting_for_fetch = true;
+
+				const verifyRes = await fetch("/api/webauthn/confirm_activate", {
+					method: "POST",
+					headers: {
+						'Content-type': 'application/json'
+					},
+					body: JSON.stringify({
+						cred: SerializePKC(credentials),
+						cred_name: ""
+					}),
+				});
+				this.waiting_for_fetch = false;
+
+				if(httpRange(verifyRes.status) === 200) {
+					const { registered } = await verifyRes.json();
+
+					if(registered) {
+						// name chooser dialog
+						this.realData = await this.fetchAuthnData();
+					}
+					else {
+						Materialize.toast(this.messages.error.webauthn.registration_failed, 3000, 'red darken-1');
+					}
+				}
+				else {
+					// timed out
+					if(verifyRes.status === 422) {
+						Materialize.toast(this.messages.error.webauthn.timeout, 3000, 'red darken-1');
+					}
+					else {
+						Materialize.toast(this.messages.error.webauthn.generic, 3000, 'red darken-1');
+					}
+				}
+			}
+			catch(e) {
+				if (typeof (onError) === "function") {
+					onError();
+				}
+				this.user.methods.webauthn.waiting = false;
+
+				// Already registered
+				if(e.name === "InvalidStateError") {
+					Materialize.toast(this.messages.error.webauthn.already_registered, 3000, 'red darken-1');
+				} 
+				// user said no / something like that
+				else if(e.name === "NotAllowedError") {
+					Materialize.toast(this.messages.error.webauthn.user_declined, 3000, 'red darken-1');
+				}
+				else {
+					Materialize.toast(this.messages.error.webauthn.generic, 3000, 'red darken-1');
+					console.error("/api/webauthn/confirm_activate", status, e.toString());
+				}
+			}
+		},
+	},
+	async mounted() {
+		this.realData = await this.fetchAuthnData();
+
+		if(this.realData.auths.length === 0) {
+			this.generateWebauthn();
+		}
+	},
+	beforeUnmount() {
+		console.log("ahhhh");
+		if(this.data.auths.length === 0) {
+			fetch("/api/webauthn/activate", {method: "PUT"})
+		}
+	},
+	template: '#webauthn-method',
 });
 
 var RandomCodeMethod = Vue.extend({
@@ -194,6 +742,7 @@ var UserDashboard = Vue.extend({
         "push": PushMethod,
         "totp": TotpMethod,
         "bypass": BypassMethod,
+        "webauthn": WebAuthnMethod,
         "random_code": RandomCodeMethod,
         "random_code_mail":RandomCodeMailMethod,
 	"esupnfc":Esupnfc
@@ -224,6 +773,9 @@ var UserDashboard = Vue.extend({
 		    this.generateTotp(function () {
                             this.user.methods.totp.active = false;                           
                         });
+                    break;
+                case 'webauthn':
+                    this.standardActivate(method);
                     break;
                 case 'esupnfc':
                     this.standardActivate(method);
@@ -351,6 +903,7 @@ var UserView = Vue.extend({
         "push": PushMethod,
         "totp": TotpMethod,
         "bypass": BypassMethod,
+        "webauthn": WebAuthnMethod,
         "random_code": RandomCodeMethod,
         "random_code_mail":RandomCodeMailMethod,
 	"esupnfc":Esupnfc
@@ -372,6 +925,9 @@ var UserView = Vue.extend({
 		    this.generateBypass(function () {
                             this.user.methods.bypass.active = false;
                         })
+                    break;
+                case 'webauthn':
+                    this.standardActivate(method);
                     break;
                 case 'random_code':
                     this.standardActivate(method);

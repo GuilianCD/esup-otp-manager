@@ -1,0 +1,39 @@
+script#webauthn-singlefactor(type='text/x-template').
+    <div class="authenticator-tag">
+
+        <template v-if="editing">
+            <div class="authenticator-head">
+                <i class="material-icons authenticator-icon">mode_edit</i>
+
+                <div style="position: relative; height: 100%; width: 100%">
+                    <input id="new-name-input" type="text" class="authenticator-title-input" style="flex: 10;" :value="nameBeingTyped" v-on:beforeinput="onBeforeNameBeingTyped" v-on:input="onNameTyped" v-on:keyup.esc="cancelChoosingName" v-on:keyup.enter="resolveChoosingName"/>
+                    <span class="authenticator-title-char-count">{{characterCountIndicator}}</span>
+                </div>
+            </div>
+
+            <button class="btn-flat waves-effect authenticator-action" :title="messages.api.action.cancel" @click="cancelChoosingName">
+                <i class="material-icons">undo</i>
+            </button>
+
+            <div class="authenticator-button-roundifier divider-left teal">
+                <button class="btn teal waves-effect authenticator-action" :title="messages.api.action.validate" @click="resolveChoosingName">
+                    <i class="material-icons">check_circle_outline</i>
+                </button>
+            </div>
+        </template>
+
+        <template v-else>
+            <button class="btn-flat waves-effect authenticator-head" @click="startEditing" @mouseover="hovering_edit = true" @mouseleave="hovering_edit = false">
+                <i v-if="hovering_edit" class="material-icons authenticator-icon">mode_edit</i>
+                <i v-else class="material-icons authenticator-icon">vpn_key</i>
+
+                <p class="authenticator-title" :title="messages.api.action.modify">{{name}}</p>            
+            </button>
+
+            <div class="authenticator-button-roundifier divider-left red darken-2">
+                <button class="btn red darken-2 waves-effect authenticator-action" :title="messages.api.action.remove" @click="$emit('deletefactor', credentialID)">
+                    <i class="material-icons">delete_forever</i>
+                </button>
+            </div>
+        </template>
+    </div>

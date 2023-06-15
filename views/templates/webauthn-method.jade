@@ -1,0 +1,32 @@
+script#webauthn-method(type='text/x-template').
+    <div>
+      <div style="height: 0.5em;">
+        <div v-show="waiting_for_fetch">
+          <div class="progress">
+            <div class="indeterminate"></div>
+          </div>
+        </div>
+      </div>
+      
+      <template v-if="gotData">
+        <div>
+          <p v-html="descriptionMessage" />
+          <ul id="list-of-authenticators" style="">
+            <li v-for="(authenticator, index) in data.auths">
+              <WebAuthnSingleFactor @deletefactor="deleteAuthenticatorConfirm" @newfactorname="updateFactorName" v-bind:messages='messages' :name="authenticator.name" :id="index" :credentialID="authenticator.credentialID" :is_real="authenticator.real"/>
+            </li>
+
+            <li>
+              <button id="add-authenticator" class="authenticator-tag btn-large waves-effect teal btn" :title="messages.api.action.add" v-if="showAddButton" @click=generateWebauthn>
+                <i class="material-icons" style="font-size: 1.5em;">add</i>
+                <span>{{messages.api.action.add}}</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </template>
+
+      
+        
+
+    </div>
