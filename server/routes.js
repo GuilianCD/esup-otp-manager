@@ -174,6 +174,27 @@ function routing() {
         });
     });
 
+    router.post('/api/:method/confirm_activate', isUser, function(req, res) {
+        request_otp_api(req, res, {
+            method: 'POST',
+            relUrl: 'protected/users/'+req.session.passport.user.uid+'/methods/'+req.params.method+'/confirm_activate/', bearerAuth: true,
+        });
+    });
+
+    router.post('/api/:method/auth/:authenticator_id', isUser, function(req, res) {
+        request_otp_api(req, res, {
+            method: 'POST',
+            relUrl: `protected/users/${req.session.passport.user.uid}/methods/${req.params.method}/auth/${req.params.authenticator_id}/`, bearerAuth: true,
+        });
+    });
+
+    router.delete('/api/:method/auth/:authenticator_id', isUser, function(req, res) {
+        request_otp_api(req, res, {
+            method: 'DELETE',
+            relUrl: `protected/users/${req.session.passport.user.uid}/methods/${req.params.method}/auth/${req.params.authenticator_id}/`, bearerAuth: true,
+        });
+    });
+
     router.put('/api/:method/deactivate', isUser, function(req, res) {
         request_otp_api(req, res, {
             method: 'PUT',
