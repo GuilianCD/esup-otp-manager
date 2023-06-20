@@ -3,7 +3,14 @@
     "valid_credentials": "Identifiants valides",
     "transports_found": "Liste de transports trouvés",
     "methods_found": "Méthodes trouvées",
-    "update": "Mis à jour réussie"
+    "update": "Mis à jour réussie",
+
+
+    "webauthn": {
+      "generic": "Opération réussie.",
+      "registered": "Facteur ajouté.",
+      "deleted": "Facteur supprimé."
+    }
   },
   "error": {
     "invalid_credentials": "Identifiants invalides",
@@ -11,7 +18,19 @@
     "transport_not_found": "Transport non trouvé",
     "method_not_found": "Méthode non trouvée",
     "unvailable_method_operation": "Cette opération est invalide pour la méthode sélectionnée",
-    "unvailable_method_transport": "Ce transport est invalide pour la méthode sélectionnée"
+    "unvailable_method_transport": "Ce transport est invalide pour la méthode sélectionnée",
+
+    "webauthn": {
+      "generic": "Une erreur est survenue. Veuillez réessayer.",
+      "timeout": "Vous avez dépassé le temps maximal autorisé pour l'ajout du facteur. Veuillez réessayer.",
+      "registration_failed": "Une erreur est survenue pendant l'ajout du facteur. Veuillez réessayer.",
+      "already_registered": "Vous avez déjà ajouté ce facteur d'authentification.",
+      "user_declined": "Vous avez annulé l'ajout du facteur.",
+      "delete_failed": "Une erreur est survenue pendant la suppression du facteur. Veuillez réessayer.",
+
+      "input_hint_type": "Veuillez n'utiliser que des valeurs alphanumériques, des underscores, et des espaces.",
+      "input_hint_length": "Veuillez utiliser entre 1 et 20 caractères."
+  }
   },
   "api": {
     "methods": {
@@ -52,18 +71,27 @@
       "esupnfc": {
           "name": "EsupNFC",
           "description": "Méthode permettant de récupérer un code en badgeant la carte"
-      }
+      },
+      "webauthn": {
+        "name": "WebAuthn",
+        "description": "Facteur physique d'authentification.",
+        "usage": "Si vous avez un moyen physique comme une clé Yubikey, branchez le maintenant.",
+        "no_authentificators": "Vous n'avez pas de moyen d'authentification enregistré. En ajouter un ?",
+        "single_auth": "Vous avez 1 moyen d'authentification.",
+        "nb_of_auths": "Vous avez %NB% moyens d'authentification." 
+    }
     },
     "home": {
-	"description": "Vous permet d'ajouter un deuxième niveau de protection à votre compte (authentification double facteur). Ainsi, il sera impossible d'accéder à votre compte même avec votre mot de passe.",
-	"methods":"Vous pouvez définir :",
-	"push":"qu'une notification / push soit envoyée sur l'application Esup Auth (Android, iOS).",
-	"totp":"qu'un code (TOTP) soit généré dans une application (Esup Auth, Authenticator, Plugin OTP...).",
-  "bypass":"qu'une liste de code à usage unique soit générée aléatoirement (Codes de secours).",
-  "esupnfc":"une connexion en badgeant avec votre carte d'étudiant ou professionnelle.",
-  "random_code":"qu'un code à usage unique vous soit envoyé par SMS.",
-  "random_code_mail":"qu'un code à usage unique vous soit envoyé par Courriel.",
-	"note":"Dans vos préférences, nous vous conseillons fortement de paramétrer au moins 2 méthodes afin de pouvoir assurer la continuité d'utilisation des services numériques."
+      "description": "Vous permet d'ajouter un deuxième niveau de protection à votre compte (authentification double facteur). Ainsi, il sera impossible d'accéder à votre compte même avec votre mot de passe.",
+      "methods":"Vous pouvez définir :",
+      "push":"qu'une notification / push soit envoyée sur l'application Esup Auth (Android, iOS).",
+      "totp":"qu'un code (TOTP) soit généré dans une application (Esup Auth, Authenticator, Plugin OTP...).",
+      "bypass":"qu'une liste de code à usage unique soit générée aléatoirement (Codes de secours).",
+      "esupnfc":"une connexion en badgeant avec votre carte d'étudiant ou professionnelle.",
+      "random_code":"qu'un code à usage unique vous soit envoyé par SMS.",
+      "random_code_mail":"qu'un code à usage unique vous soit envoyé par Courriel.",
+      "webauthn":"Connection sécurisée avec WebAuthn",
+      "note":"Dans vos préférences, nous vous conseillons fortement de paramétrer au moins 2 méthodes afin de pouvoir assurer la continuité d'utilisation des services numériques."
     },
     "index": "Interface de gestion de mots de passe à usage unique",
     "action":{
@@ -76,12 +104,23 @@
       "remove" : "Supprimer",
       "search" : "Chercher",
       "select" : "Sélectionner",
+      "cancel": "Annuler",
+      "validate": "Valider",
       "add" : "Ajouter",
       "generate_codes" : "Générer des codes",
       "generate_qrcode" : "Générer QRCode",
       "logout" : "Se déconnecter",
       "confirm_deactivate" : "Voulez-vous vraiment désactiver ?",
-      "confirm_generate" :"Les anciens codes seront invalidés. Voulez-vous continuer ?"
+      "confirm_generate" :"Les anciens codes seront invalidés. Voulez-vous continuer ?",
+
+      "webauthn": {
+        "register": "Ajouter un facteur d'authentification",
+        "confirm_delete": "Vous ne pourrez plus vous authentifier en utilisant ce facteur. Continuer ?",
+        "give_name_to_factor": "Veuillez donner un nom à votre authentificateur. Appuyez sur %CANCEL_KEY% pour annuler"
+    }
+    },
+    "key": {
+      "escape": "echap"
     },
     "title":"ESUP OTP Manager",
     "menu":{

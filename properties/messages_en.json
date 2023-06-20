@@ -3,7 +3,14 @@
     "valid_credentials": "Invalids login infos",
     "transports_found": "Transports not found",
     "methods_found": "Methods found",
-    "update": "Succesful update"
+    "update": "Succesful update",
+
+
+    "webauthn": {
+      "generic": "Operation was successful.",
+      "registered": "Registered authentificator successfully.",
+      "deleted": "Deleted authentificator successfully."
+  }
   },
   "error": {
     "invalid_credentials": "Invalids login infos",
@@ -11,7 +18,19 @@
     "transport_not_found": "Transport not found",
     "method_not_found": "Method not found",
     "unvailable_method_operation": "Unvailable operation for this method",
-    "unvailable_method_transport": "Invalid transport for this method"
+    "unvailable_method_transport": "Invalid transport for this method",
+
+    "webauthn": {
+      "generic": "There was an error processing your request. Please try again later",
+      "timeout": "Registration timed out. Please try again.",
+      "registration_failed": "Could not register because of a server error. Please try again.",
+      "already_registered": "You already registered this authentificator.",
+      "user_declined": "You aborted the registration.",
+      "delete_failed": "Could not delete the authentificator. Please try again.",
+
+      "input_hint_type": "Please only use alphanumerics, underscores, and spaces.",
+      "input_hint_length": "Please only use 1 to 20 characters."
+  }
   },
   "api": {
     "methods": {
@@ -52,17 +71,26 @@
       "esupnfc": {
           "name": "EsupNFC",
           "description": "Method for connecting via NFC swipe"
+      },
+      "webauthn": {
+          "name": "WebAuthn",
+          "description": "Physical MFA factor.",
+          "usage": "If you have a physical device such as a Yubikey, you should plug it in now.",
+          "no_authentificators": "You have no authentificators registered. Register one ?",
+          "single_auth": "You have 1 authentification method registered.",
+          "nb_of_auths": "You have %NB% authentification methods registered." 
       }
     },
     "home":{
-	   "description": "ESUP-OTP permits you to add a second level of protection to your account. You can, for example, set a single-use code sent to you by SMS in addition to your username and password. Thus, a third can not access your account with the same password.",
-	"push":"Notification to Esup Auth (Android, iOS).",
-	"totp":"TOTP code into an application (Esup Auth, Authenticator...).",
-        "bypass":"Display random Codes (Backup codes).",
-        "esupnfc":"Connexion with student card or business card",
-        "random_code":"Send random code by SMS.",
-        "random_code_mail":"Send random code by mail.",
-	"note":"Set up at least 2 methods among:"
+      "description": "ESUP-OTP permits you to add a second level of protection to your account. You can, for example, set a single-use code sent to you by SMS in addition to your username and password. Thus, a third can not access your account with the same password.",
+      "push":"Notification to Esup Auth (Android, iOS).",
+      "totp":"TOTP code into an application (Esup Auth, Authenticator...).",
+      "bypass":"Display random Codes (Backup codes).",
+      "esupnfc":"Connection with student card or business card",
+      "random_code":"Send random code by SMS.",
+      "random_code_mail":"Send random code by mail.",
+      "webauthn":"Secure login using WebAuthn",
+      "note":"Set up at least 2 methods among:"
     },
     "index": "Single use passwords management interface",
     "action":{
@@ -75,12 +103,23 @@
       "remove" : "Remove",
       "search" : "Search",
       "select" : "Select",
+      "cancel": "Cancel",
+      "validate": "Validate",
       "add" : "Add",
       "generate_codes" : "Generate codes",
       "generate_qrcode" : "Generate QRCode",
       "logout" : "Logout",
       "confirm_deactivate" : "Do you want to deactivate ?",
-      "confirm_generate" :"Old codes will be erased. Continue ?"
+      "confirm_generate" :"Old codes will be erased. Continue ?",
+
+      "webauthn": {
+        "register": "Register an authentificator",
+        "confirm_delete": "You won't be able to log in with this authentificator anymore. Continue ?",
+        "give_name_to_factor": "Please enter a name for your factor. Press %CANCEL_KEY% to cancel."
+    }
+    },
+    "key": {
+      "escape": "escape"
     },
     "title":"ESUP OTP Manager",
     "menu":{
