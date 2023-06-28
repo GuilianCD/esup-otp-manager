@@ -523,7 +523,7 @@ const WebAuthnMethod = Vue.extend({
 					rp: data.rp,
 					user: {
 						id: Uint8Array.from(data.user_id), 
-						name: `${this.user.uid}@univ-paris1.fr`,
+						name: `${this.user.uid}@${data.rp.id}`,
 						displayName: `${this.user.uid}` 
 					},
 					// Spec recommends at least supporting these
@@ -629,7 +629,6 @@ const WebAuthnMethod = Vue.extend({
 		}
 	},
 	beforeUnmount() {
-		console.log("ahhhh");
 		if(this.data.auths.length === 0) {
 			fetch("/api/webauthn/activate", {method: "PUT"})
 		}
