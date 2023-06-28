@@ -38,16 +38,6 @@ var arr = window.location.href.split('/');
 var urlSockets = arr[0] + "//" + arr[2];
 var socket;
 
-/**
- * Gives the "range" of an http status code.
- * It makes it easier to check if a status
- * code is a success (2XX), a request error
- * (4XX), etc.
- *  **/
-function httpRange(status) {
-	return (status - (status % 100));
-}
-
 
 /** base64url helper functions **/
 /**
@@ -442,7 +432,7 @@ const WebAuthnMethod = Vue.extend({
 					}, 
 				);
 				
-				if(httpRange(res.status) === 200) {
+				if(200 <= res.status && res.status < 300) {
 					// update data
 					this.realData = await this.fetchAuthnData();
 					// FIXME display correct message ? maybe ?
@@ -468,7 +458,7 @@ const WebAuthnMethod = Vue.extend({
 
 				const res = await fetch("/api/webauthn/auth/" + authCredID, {method: "DELETE"});
 				
-				if(httpRange(res.status) === 200) {
+				if(200 <= res.status && res.status < 300) {
 					// @TODO(Guilian): can filter directly instead of refetching
 					this.realData = await this.fetchAuthnData();
 					Materialize.toast(this.messages.success.webauthn.deleted, 3000, 'green darken-1');
@@ -589,7 +579,7 @@ const WebAuthnMethod = Vue.extend({
 				});
 				this.waiting_for_fetch = false;
 
-				if(httpRange(verifyRes.status) === 200) {
+				if(200 <= verifyRes.status && verifyRes.status < 300) {
 					const { registered } = await verifyRes.json();
 
 					if(registered) {
