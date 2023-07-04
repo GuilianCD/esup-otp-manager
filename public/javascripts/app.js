@@ -521,6 +521,7 @@ const WebAuthnMethod = Vue.extend({
 				const publicKeyCredentialCreationOptions = {
 					challenge: base64URLStringToBuffer(data.nonce),
 					rp: data.rp,
+					rpId: data.rp.id,
 					user: {
 						id: Uint8Array.from(data.user_id), 
 						name: `${this.user.uid}@${data.rp.id}`,
@@ -532,6 +533,14 @@ const WebAuthnMethod = Vue.extend({
 					timeout: 60000,
 					// leaks data about the user if in direct mode.
 					attestation: "none",
+					extensions: {
+						credProps: true,
+					},
+					authenticatorSelection: {
+						residentKey:"preferred",
+						requireResidentKey:false,
+						userVerification:"preferred"
+					},
 					// Don't register the same credentials twice
 					excludeCredentials: data.auths.map(a => ({id: base64URLStringToBuffer(a.credentialID), type: "public-key"})),
 				};
