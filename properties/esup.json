@@ -1,4 +1,5 @@
 {
+    "ourContextPath": "/",
     "CAS": {
         "version": "CAS3.0",
         "casBaseURL": "http://localhost/cas",

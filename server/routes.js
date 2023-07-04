@@ -6,6 +6,8 @@ var utils = require(__dirname+'/../services/utils');
 
 var passport;
 
+const { ourContextPath } = properties.esup
+
 /** @param {{ relUrl: string; bearerAuth?: true, method?: 'POST'|'PUT'|'DELETE' }} opts_ */
 function request_otp_api(req, res, opts_) {
     console.log("requesting api");
@@ -68,23 +70,23 @@ function isAuthenticated(req, res) {
 
 function isUser(req, res, next) {
     if (isAuthenticated(req, res)) return next();
-    res.redirect('/login');
+    res.redirect(ourContextPath + 'login');
 }
 
 function isManager(req, res, next) {
     if (isAuthenticated(req, res)) {
         if (utils.is_manager(req.session.passport.user) || utils.is_admin(req.session.passport.user))return next();
-        res.redirect('/forbidden');
+        res.redirect(ourContextPath + 'forbidden');
     }
-    res.redirect('/login');
+    res.redirect(ourContextPath + 'login');
 }
 
 function isAdmin(req, res, next) {
     if (isAuthenticated(req, res)) {
         if(utils.is_admin(req.session.passport.user))return next();
-        res.redirect('/forbidden');
+        res.redirect(ourContextPath + 'forbidden');
     }
-    res.redirect('/login');
+    res.redirect(ourContextPath + 'login');
 }
 
 function routing() {
@@ -122,7 +124,7 @@ function routing() {
 
             if (!user) {
                 console.log(info.message);
-                return res.redirect('/');
+                return res.redirect(ourContextPath);
             }
 
             req.logIn(user, function(err) {
@@ -131,7 +133,7 @@ function routing() {
                     return next(err);
                 }
                 req.session.messages = '';
-                return res.redirect('/preferences');
+                return res.redirect(ourContextPath + 'preferences');
             });
         })(req, res, next);
     });

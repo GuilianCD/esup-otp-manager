@@ -109,7 +109,7 @@ var PushMethod = Vue.extend({
     },
     created: function () {
         var self = this;
-        socket = io.connect(urlSockets, {reconnect: true, path: "/sockets"});
+        socket = io.connect(urlSockets, { reconnect: true, path: new URL("sockets", location.href).pathname });
 
         socket.on('userPushActivate', function () {
             self.activatePush();
@@ -378,7 +378,7 @@ const WebAuthnMethod = Vue.extend({
 			let fetchedData;
 			try {
 				this.waiting_for_fetch = true;
-				const res = await fetch("/api/secret/webauthn", {method: "GET"});
+				const res = await fetch("api/secret/webauthn", {method: "GET"});
 
 				if(res.headers.get('content-type').split(';').includes("application/json") === false) {
 					//console.error("Incorrect api response type : " + res.headers.get('content-type'));
@@ -421,7 +421,7 @@ const WebAuthnMethod = Vue.extend({
 			try {
 				this.waiting_for_fetch = true;
 
-				const res = await fetch("/api/webauthn/auth/" + authCredID, {
+				const res = await fetch("api/webauthn/auth/" + authCredID, {
 						method: "POST",
 						headers: {
 							"Content-Type": "application/json",
@@ -456,7 +456,7 @@ const WebAuthnMethod = Vue.extend({
 			try {
 				this.waiting_for_fetch = true;
 
-				const res = await fetch("/api/webauthn/auth/" + authCredID, {method: "DELETE"});
+				const res = await fetch("api/webauthn/auth/" + authCredID, {method: "DELETE"});
 				
 				if(200 <= res.status && res.status < 300) {
 					// @TODO(Guilian): can filter directly instead of refetching
@@ -567,7 +567,7 @@ const WebAuthnMethod = Vue.extend({
 				
 				this.waiting_for_fetch = true;
 
-				const verifyRes = await fetch("/api/webauthn/confirm_activate", {
+				const verifyRes = await fetch("api/webauthn/confirm_activate", {
 					method: "POST",
 					headers: {
 						'Content-type': 'application/json'
@@ -616,7 +616,7 @@ const WebAuthnMethod = Vue.extend({
 				}
 				else {
 					Materialize.toast(this.messages.error.webauthn.generic, 3000, 'red darken-1');
-					console.error("/api/webauthn/confirm_activate", status, e.toString());
+					console.error("api/webauthn/confirm_activate", status, e.toString());
 				}
 			}
 		},
@@ -630,7 +630,7 @@ const WebAuthnMethod = Vue.extend({
 	},
 	beforeUnmount() {
 		if(this.data.auths.length === 0) {
-			fetch("/api/webauthn/activate", {method: "PUT"})
+			fetch("api/webauthn/activate", {method: "PUT"})
 		}
 	},
 	template: '#webauthn-method',
@@ -655,7 +655,7 @@ var RandomCodeMethod = Vue.extend({
                 document.getElementById(transport + '-input').value = '';
                 $.ajax({
                     method: 'PUT',
-                    url: '/api/transport/' + transport + '/' + new_transport + '/' + this.user.uid,
+                    url: 'api/transport/' + transport + '/' + new_transport + '/' + this.user.uid,
                     dataType: 'json',
                     cache: false,
                     success: function(data) {
@@ -669,7 +669,7 @@ var RandomCodeMethod = Vue.extend({
                         this.user.transports[transport]= oldTransport;
                         document.getElementById(transport + '-input').value = oldTransport;
                         Materialize.toast(err, 3000, 'red darken-1');
-                        console.error('/api/transport/' + transport + '/' + new_transport, status, err.toString());
+                        console.error('api/transport/' + transport + '/' + new_transport, status, err.toString());
                     }.bind(this)
                 });
             }else Materialize.toast('Format invalide.', 3000, 'red darken-1');
@@ -679,7 +679,7 @@ var RandomCodeMethod = Vue.extend({
             this.user.transports[transport]= null;
             $.ajax({
                 method: 'DELETE',
-                url: '/api/transport/' + transport + '/' + this.user.uid,
+                url: 'api/transport/' + transport + '/' + this.user.uid,
                 dataType: 'json',
                 cache: false,
                 success: function(data) {
@@ -694,7 +694,7 @@ var RandomCodeMethod = Vue.extend({
         },
         testTransport: function(transport) {
             $.ajax({
-                url: '/api/transport/' + transport + '/test/' + this.user.uid,
+                url: 'api/transport/' + transport + '/test/' + this.user.uid,
                 dataType: 'json',
                 cache: false,
                 success: function(data) {
@@ -703,7 +703,7 @@ var RandomCodeMethod = Vue.extend({
                 }.bind(this),
                 error: function(xhr, status, err) {
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error('/api/transport/' + transport + '/test', status, err.toString());
+                    console.error('api/transport/' + transport + '/test', status, err.toString());
                 }.bind(this)
             });
         },
@@ -781,7 +781,7 @@ var UserDashboard = Vue.extend({
             //ajax
             $.ajax({
                 method: "PUT",
-                url: "/api/push/activate",
+                url: "api/push/activate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -792,14 +792,14 @@ var UserDashboard = Vue.extend({
                     }else Materialize.toast('Erreur interne, veuillez réessayer plus tard.', 3000, 'red darken-1');
                 }.bind(this),
                 error: function (xhr, status, err) {
-                    console.error("/api/push/activate", status, err.toString());
+                    console.error("api/push/activate", status, err.toString());
                 }.bind(this)
             });
         },       
         standardActivate: function (method) {
             $.ajax({
                 method: "PUT",
-                url: "/api/"+method+"/activate",
+                url: "api/" + method + "/activate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -809,7 +809,7 @@ var UserDashboard = Vue.extend({
                     } else this.user.methods[method].active = true;
                 }.bind(this),
                 error: function (xhr, status, err) {
-                    console.error("/api/"+method+"/activate", status, err.toString());
+                    console.error("api/"+method+"/activate", status, err.toString());
                 }.bind(this)
             });
         },     
@@ -818,7 +818,7 @@ var UserDashboard = Vue.extend({
            if(this.user.methods[method].askActivation) this.user.methods[method].askActivation=false;	
             $.ajax({
                 method: "PUT",
-                url: "/api/" + method + "/deactivate",
+                url: "api/" + method + "/deactivate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -829,7 +829,7 @@ var UserDashboard = Vue.extend({
                 }.bind(this),
                 error: function (xhr, status, err) {
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/" + method + "/deactivate", status, err.toString());
+                    console.error("api/" + method + "/deactivate", status, err.toString());
                 }.bind(this)
             });
 	   }
@@ -843,7 +843,7 @@ var UserDashboard = Vue.extend({
         generateBypass: function (onError) {   
             $.ajax({
                 method: "POST",
-                url: "/api/generate/bypass",
+                url: "api/generate/bypass",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -853,14 +853,14 @@ var UserDashboard = Vue.extend({
                 error: function (xhr, status, err) {
                     if (typeof(onError) === "function") onError();
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/generate/bypass", status, err.toString());
+                    console.error("api/generate/bypass", status, err.toString());
                 }.bind(this)
             });
         },
         generateTotp: function (onError) {
             $.ajax({
                 method: "POST",
-                url: "/api/generate/totp",
+                url: "api/generate/totp",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -873,7 +873,7 @@ var UserDashboard = Vue.extend({
                 error: function (xhr, status, err) {
                     if (typeof(onError) === "function") onError();
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/generate/totp", status, err.toString());
+                    console.error("api/generate/totp", status, err.toString());
                 }.bind(this)
             });
         }
@@ -945,7 +945,7 @@ var UserView = Vue.extend({
             //ajax
             $.ajax({
                 method: "PUT",
-                url: "/api/admin/" + this.user.uid + "/push/activate",
+                url: "api/admin/" + this.user.uid + "/push/activate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -957,14 +957,14 @@ var UserView = Vue.extend({
                 }.bind(this),
                 error: function (xhr, status, err) {
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/" + this.user.uid + "/push/activate", status, err.toString());
+                    console.error("api/admin/" + this.user.uid + "/push/activate", status, err.toString());
                 }.bind(this)
             });
         },        
         standardActivate: function (method) {
             $.ajax({
                 method: "PUT",
-                url: "/api/admin/" + this.user.uid + "/"+method+"/activate",
+                url: "api/admin/" + this.user.uid + "/" + method + "/activate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -976,7 +976,7 @@ var UserView = Vue.extend({
                 error: function (xhr, status, err) {
                     this.user.methods[method].active = false;
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/" + this.user.uid + "/"+method+"/activate", status, err.toString());
+                    console.error("api/admin/" + this.user.uid + "/"+method+"/activate", status, err.toString());
                 }.bind(this)
             });
         },            
@@ -985,7 +985,7 @@ var UserView = Vue.extend({
             if(this.user.methods[method].askActivation) this.user.methods[method].askActivation=false;	
             $.ajax({
                 method: "PUT",
-                url: "/api/admin/" + this.user.uid + "/" + method + "/deactivate",
+                url: "api/admin/" + this.user.uid + "/" + method + "/deactivate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -998,7 +998,7 @@ var UserView = Vue.extend({
                 error: function (xhr, status, err) {
                     this.user.methods[method].active = true;
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/" + this.user.uid + "/" + method + "/activate", status, err.toString());
+                    console.error("api/admin/" + this.user.uid + "/" + method + "/activate", status, err.toString());
                 }.bind(this)
             });
 	  }
@@ -1012,7 +1012,7 @@ var UserView = Vue.extend({
         generateBypass: function (onError) {       
             $.ajax({
                 method: "POST",
-                url: "/api/admin/generate/bypass/" + this.user.uid,
+                url: "api/admin/generate/bypass/" + this.user.uid,
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1022,14 +1022,14 @@ var UserView = Vue.extend({
                 error: function (xhr, status, err) {
                     if (typeof(onError) === "function") onError();
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/generate/bypass/" + this.user.uid, status, err.toString());
+                    console.error("api/admin/generate/bypass/" + this.user.uid, status, err.toString());
                 }.bind(this)
             });
         },
         generateTotp: function (onError) {
             $.ajax({
                 method: "POST",
-                url: "/api/admin/generate/totp/" + this.user.uid,
+                url: "api/admin/generate/totp/" + this.user.uid,
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1042,7 +1042,7 @@ var UserView = Vue.extend({
                 error: function (xhr, status, err) {
                     if (typeof(onError) === "function") onError();
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/generate/bypass/" + this.user.uid, status, err.toString());
+                    console.error("api/admin/generate/bypass/" + this.user.uid, status, err.toString());
                 }.bind(this)
             });
         },
@@ -1126,7 +1126,7 @@ var ManagerDashboard = Vue.extend({
 
         getUsers: function () {
             $.ajax({
-                url: "/api/admin/users",
+                url: "api/admin/users",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1134,7 +1134,7 @@ var ManagerDashboard = Vue.extend({
                 }.bind(this),
                 error: function (xhr, status, err) {
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/users", status, err.toString());
+                    console.error("api/admin/users", status, err.toString());
                 }.bind(this)
             });
         },
@@ -1145,7 +1145,7 @@ var ManagerDashboard = Vue.extend({
 
         getUser: function (uid) {
             $.ajax({
-                url: "/api/admin/user/" + uid,
+                url: "api/admin/user/" + uid,
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1154,7 +1154,7 @@ var ManagerDashboard = Vue.extend({
                 }.bind(this),
                 error: function (xhr, status, err) {
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/user/" + uid, status, err.toString());
+                    console.error("api/admin/user/" + uid, status, err.toString());
                 }.bind(this)
             });
         },
@@ -1181,7 +1181,7 @@ var AdminDashboard = Vue.extend({
             event.target.checked = true;
             $.ajax({
                 method: "PUT",
-                url: "/api/admin/" + event.target.name + "/activate",
+                url: "api/admin/" + event.target.name + "/activate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1195,7 +1195,7 @@ var AdminDashboard = Vue.extend({
                 error: function (xhr, status, err) {
                     event.target.checked = false;
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/" + event.target.name + "/activate", status, err.toString());
+                    console.error("api/admin/" + event.target.name + "/activate", status, err.toString());
                 }.bind(this)
             });
         },
@@ -1203,7 +1203,7 @@ var AdminDashboard = Vue.extend({
             event.target.checked = false;
             $.ajax({
                 method: "PUT",
-                url: "/api/admin/" + event.target.name + "/deactivate",
+                url: "api/admin/" + event.target.name + "/deactivate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1215,7 +1215,7 @@ var AdminDashboard = Vue.extend({
                 error: function (xhr, status, err) {
                     event.target.checked = true;
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/" + event.target.name + "/deactivate", status, err.toString());
+                    console.error("api/admin/" + event.target.name + "/deactivate", status, err.toString());
                 }.bind(this)
             });
         },
@@ -1223,7 +1223,7 @@ var AdminDashboard = Vue.extend({
             event.target.checked = true;
             $.ajax({
                 method: "PUT",
-                url: "/api/admin/" + method + "/transport/" + transport + "/activate",
+                url: "api/admin/" + method + "/transport/" + transport + "/activate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1237,7 +1237,7 @@ var AdminDashboard = Vue.extend({
                 error: function (xhr, status, err) {
                     event.target.checked = false;
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/" + method + "/transport/" + transport + "/activate", status, err.toString());
+                    console.error("api/admin/" + method + "/transport/" + transport + "/activate", status, err.toString());
                 }.bind(this)
             });
         },
@@ -1245,7 +1245,7 @@ var AdminDashboard = Vue.extend({
             event.target.checked = false;
             $.ajax({
                 method: "PUT",
-                url: "/api/admin/" + method + "/transport/" + transport + "/deactivate",
+                url: "api/admin/" + method + "/transport/" + transport + "/deactivate",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1260,7 +1260,7 @@ var AdminDashboard = Vue.extend({
                 error: function (xhr, status, err) {
                     event.target.checked = true;
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/admin/" + method + "/transport/" + transport + "/deactivate", status, err.toString());
+                    console.error("api/admin/" + method + "/transport/" + transport + "/deactivate", status, err.toString());
                 }.bind(this)
             });
         },
@@ -1347,7 +1347,7 @@ var app = new Vue({
 
         getUser: function () {
             $.ajax({
-                url: "/api/user",
+                url: "api/user",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1355,7 +1355,7 @@ var app = new Vue({
                 }.bind(this),
                 error: function (xhr, status, err) {
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/user", status, err.toString());
+                    console.error("api/user", status, err.toString());
                 }.bind(this)
             });
         },
@@ -1367,12 +1367,12 @@ var app = new Vue({
         },
         getMethods: function () {
             $.ajax({
-                url: "/api/methods",
+                url: "api/methods",
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
                     $.ajax({
-                        url: "/manager/users_methods",
+                        url: "manager/users_methods",
                         dataType: 'json',
                         cache: false,
                         success: function (users_methods) {
@@ -1381,13 +1381,13 @@ var app = new Vue({
                         }.bind(this),
                         error: function (xhr, status, err) {
                             Materialize.toast(err, 3000, 'red darken-1');
-                            console.error("/manager/users_methods", status, err.toString());
+                            console.error("manager/users_methods", status, err.toString());
                         }.bind(this)
                     });
                 }.bind(this),
                 error: function (xhr, status, err) {
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/methods", status, err.toString());
+                    console.error("api/methods", status, err.toString());
                 }.bind(this)
             });
         },
@@ -1399,7 +1399,7 @@ var app = new Vue({
             var query = '';
             if(language)query="/"+language;
             $.ajax({
-                url: "/api/messages"+query,
+                url: "api/messages" + query,
                 dataType: 'json',
                 cache: false,
                 success: function (data) {
@@ -1407,7 +1407,7 @@ var app = new Vue({
                 }.bind(this),
                 error: function (xhr, status, err) {
                     Materialize.toast(err, 3000, 'red darken-1');
-                    console.error("/api/messages", status, err.toString());
+                    console.error("api/messages", status, err.toString());
                 }.bind(this)
             });
         },

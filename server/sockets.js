@@ -5,9 +5,10 @@ var io;
 var sharedSession;
 var sharedsession = require("express-socket.io-session");
 var apiSockets = require('../client/sockets');
+var properties = require(__dirname + '/../properties/properties');
 
 exports.attach = function(server){
-    io = require('socket.io')({path: "/sockets"}).attach(server);
+    io = require('socket.io')({path: properties.esup.ourContextPath + "sockets"}).attach(server);
     io.use(sharedsession(sharedSession, {
         autoSave:true
     }));

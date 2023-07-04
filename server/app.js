@@ -19,13 +19,16 @@ var sockets = require('./sockets');
 app.set('views', path.join(__dirname + '/..', 'views'));
 app.set('view engine', 'jade');
 
+const { ourContextPath } = properties.esup
 //
-app.use('/css/materialize.min.css', express.static(path.join(__dirname + '/..', '/node_modules/materialize-css/dist/css/materialize.min.css')));
-app.use('/fonts/roboto/', express.static(path.join(__dirname + '/..', '/node_modules/materialize-css/dist/fonts/roboto/')));
-app.use('/js/jquery.min.js', express.static(path.join(__dirname + '/..', '/node_modules/jquery/dist/jquery.min.js')));
-app.use('/js/socket.io.min.js', express.static(path.join(__dirname + '/..', '/node_modules/socket.io-client/dist/socket.io.min.js')));
-app.use('/js/materialize.min.js', express.static(path.join(__dirname + '/..', '/node_modules/materialize-css/dist/js/materialize.min.js')));
-app.use('/js/vue.js', express.static(path.join(__dirname + '/..', '/node_modules/vue/dist/vue.js')));
+app.use(ourContextPath + 'css/materialize.min.css', express.static(path.join(__dirname + '/..', '/node_modules/materialize-css/dist/css/materialize.min.css')));
+app.use(ourContextPath + 'fonts/roboto/', express.static(path.join(__dirname + '/..', '/node_modules/materialize-css/dist/fonts/roboto/')));
+app.use(ourContextPath + 'js/jquery.min.js', express.static(path.join(__dirname + '/..', '/node_modules/jquery/dist/jquery.min.js')));
+app.use(ourContextPath + 'js/socket.io.min.js', express.static(path.join(__dirname + '/..', '/node_modules/socket.io-client/dist/socket.io.min.js')));
+app.use(ourContextPath + 'js/materialize.min.js', express.static(path.join(__dirname + '/..', '/node_modules/materialize-css/dist/js/materialize.min.js')));
+app.use(ourContextPath + 'js/vue.js', express.static(path.join(__dirname + '/..', '/node_modules/vue/dist/vue.js')));
+
+
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -33,7 +36,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname + '/..', 'public')));
+app.use(ourContextPath, express.static(path.join(__dirname + '/..', 'public')));
 
 app.use(expressSession);
 app.use(passport.initialize());
@@ -46,7 +49,7 @@ app.use(function(req, res, next) {
 });
 
 var routes = require('./routes');
-app.use('/', routes(passport));
+app.use(ourContextPath, routes(passport));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
