@@ -407,16 +407,15 @@ const WebAuthnMethod = Vue.extend({
 			// optimistic UI (show change before server accepts)
 			const matchingAuthIndex = this.findAuthenticatorIndex(authCredID);
 
+			// optimistic UI (show change before server accepts)
+			this.realData.auths[matchingAuthIndex].name = newName;
+
 			// previousName is provided because editing the name of a factor
 			// sets it's name attribute to null.
 			if(previousName === newName) {
 				// don't send data to server 
-				this.realData.auths[matchingAuthIndex].name = newName;
 				return;
 			}
-			
-			// change AFTER comparing
-			this.realData.auths[matchingAuthIndex].name = newName;
 			
 			try {
 				this.waiting_for_fetch = true;
