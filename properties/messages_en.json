@@ -9,6 +9,7 @@
     "webauthn": {
       "generic": "Operation was successful.",
       "registered": "Registered authentificator successfully.",
+      "renamed": "Renamed authenticator successfully",
       "deleted": "Deleted authentificator successfully."
   }
   },

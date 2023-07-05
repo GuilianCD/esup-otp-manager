@@ -9,6 +9,7 @@
     "webauthn": {
       "generic": "Opération réussie.",
       "registered": "Facteur ajouté.",
+      "renamed": "Facteur renommé",
       "deleted": "Facteur supprimé."
     }
   },

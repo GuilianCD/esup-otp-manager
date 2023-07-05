@@ -433,7 +433,7 @@ const WebAuthnMethod = Vue.extend({
 				if(200 <= res.status && res.status < 300) {
 					// update data
 					this.realData = await this.fetchAuthnData();
-					Materialize.toast(this.messages.success.webauthn.registered, 3000, 'green darken-1');
+					Materialize.toast(this.messages.success.webauthn.renamed, 3000, 'green darken-1');
 				}
 				else {
 					Materialize.toast(this.messages.error.webauthn.generic, 3000, 'red darken-1');
