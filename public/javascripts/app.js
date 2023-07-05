@@ -403,8 +403,7 @@ const WebAuthnMethod = Vue.extend({
 			}
 		},
 
-		renameAuthenticator: async function(authCredID, newName, previousName, showSuccessToast = true) {
-			// optimistic UI (show change before server accepts)
+		renameAuthenticator: async function(authCredID, newName, previousName) {
 			const matchingAuthIndex = this.findAuthenticatorIndex(authCredID);
 
 			// optimistic UI (show change before server accepts)
@@ -434,10 +433,7 @@ const WebAuthnMethod = Vue.extend({
 				if(200 <= res.status && res.status < 300) {
 					// update data
 					this.realData = await this.fetchAuthnData();
-					// FIXME display correct message ? maybe ?
-					if(showSuccessToast) {
-						Materialize.toast(this.messages.success.webauthn.registered, 3000, 'green darken-1');
-					}
+					Materialize.toast(this.messages.success.webauthn.registered, 3000, 'green darken-1');
 				}
 				else {
 					Materialize.toast(this.messages.error.webauthn.generic, 3000, 'red darken-1');
