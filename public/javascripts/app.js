@@ -479,45 +479,6 @@ const WebAuthnMethod = Vue.extend({
 				const data = await this.fetchAuthnData();
 
 				// arguments for the webauthn registration
-				const pubkeyTypes = [
-					{
-					  "type": "public-key",
-					  "alg": -7
-					},
-					{
-					  "type": "public-key",
-					  "alg": -8
-					},
-					{
-					  "type": "public-key",
-					  "alg": -36
-					},
-					{
-					  "type": "public-key",
-					  "alg": -37
-					},
-					{
-					  "type": "public-key",
-					  "alg": -38
-					},
-					{
-					  "type": "public-key",
-					  "alg": -39
-					},
-					{
-					  "type": "public-key",
-					  "alg": -257
-					},
-					{
-					  "type": "public-key",
-					  "alg": -258
-					},
-					{
-					  "type": "public-key",
-					  "alg": -259
-					}
-				]
-
 				const publicKeyCredentialCreationOptions = {
 					challenge: base64URLStringToBuffer(data.nonce),
 					rp: data.rp,
@@ -528,7 +489,7 @@ const WebAuthnMethod = Vue.extend({
 						displayName: `${this.user.uid}` 
 					},
 					// Spec recommends at least supporting these
-					pubKeyCredParams: pubkeyTypes,
+					pubKeyCredParams: data.pubkeyTypes,
 					// user has 60 seconds to register
 					timeout: 60000,
 					// leaks data about the user if in direct mode.
