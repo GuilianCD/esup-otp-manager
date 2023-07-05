@@ -202,10 +202,10 @@ const WebAuthnSingleFactor = Vue.extend({
 	},
 	methods: {
 
-        startEditing: function() {
-            // prevents icon from being stuck in edit-hover mode (because the 
-            // mouseleave event of the icon is never fired)
-            this.hovering_edit = false;
+		startEditing: function() {
+			// prevents icon from being stuck in edit-hover mode (because the 
+			// mouseleave event of the icon is never fired)
+			this.hovering_edit = false;
 
 			this.nameMemory = this.name.slice(0);
 			this.$emit('newfactorname', null,  this.nameMemory, this.credentialID);
